@@ -16,6 +16,9 @@
 // Initialize Wifi connection to the router
 char ssid[] = "Itubenar";     // your network SSID (name)
 char password[] = "itubenarlo"; // your network key
+unsigned long startMillis;  
+unsigned long currentMillis;
+const unsigned long period = 10000;
 
 // Initialize Telegram BOT
 #define BOTtoken "6243097277:AAFG37wKeMM-D8Q5zycsmedGK_ABIjx4rMM"  // your Bot Token (Get from Botfather)
@@ -29,7 +32,7 @@ String user = "1558390207";
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
-int Bot_mtbs = 1000; //mean time between scan messages
+int Bot_mtbs = 10; //mean time between scan messages
 long Bot_lasttime;   //last time messages' scan has been done
 
 bool flashState = LOW;
@@ -37,8 +40,6 @@ bool flashState = LOW;
 camera_fb_t * fb = NULL;
 
 bool isMoreDataAvailable();
-/*byte* getNextBuffer();
-int getNextBufferLen();*/
 
 int currentByte;
 uint8_t* fb_buffer;
@@ -93,32 +94,6 @@ void handleNewMessages(int numNewMessages) {
   }
 }
 
-/*bool isMoreDataAvailable() {
-  if (dataAvailable)
-  {
-    dataAvailable = false;
-    return true;
-  } else {
-    return false;
-  }
-}
-
-byte* getNextBuffer(){
-  if (fb){
-    return fb->buf;
-  } else {
-    return nullptr;
-  }
-}
-
-int getNextBufferLen(){
-  if (fb){
-    return fb->len;
-  } else {
-    return 0;
-  }
-}*/
-
 void setup() {
   Serial.begin(115200);
   pinMode(13,INPUT);
@@ -131,7 +106,7 @@ void setup() {
       delay(100);
     }
   }
-
+  
   // Attempt to connect to Wifi network:
   Serial.print("Connecting Wifi: ");
   Serial.println(ssid);
@@ -158,20 +133,20 @@ void setup() {
 void loop() {
     Serial.println("nunggu pesan");    
     int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    Serial.println("ngapain");
     while (numNewMessages) {
       Serial.println("got response");
       handleNewMessages(numNewMessages);
       numNewMessages = bot.getUpdates(bot.last_message_received + 1);
     }
-
+    currentMillis = millis();
+    startMillis=currentMillis+period;
+    while (currentMillis<startMillis)
+    {
     Serial.println("nunggu kecepatan");
     if(digitalRead(13)==HIGH)
     {
     fb = NULL;
-
-      sensor_t * s = esp_camera_sensor_get();
-      //s->set_framesize(s, FRAMESIZE_QVGA);  // jz  qvga 320x250   4 kb
-      s->set_framesize(s, FRAMESIZE_UXGA);  // jz  uxga 1600x1200 100 kb
 
       fb = esp_camera_fb_get();
       esp_camera_fb_return(fb);
@@ -199,26 +174,7 @@ void loop() {
       bot.sendMessage(user, pesan, "Markdown");
       Serial.println("done!");
       esp_camera_fb_return(fb);
-    
-        
-    /*fb = NULL;
-
-    // Take Picture with Camera
-    fb = esp_camera_fb_get();
-    if (!fb) {
-      Serial.println("Camera capture failed");
-      bot.sendMessage(user, "Camera capture failed", "");
-      return;
-    }
-    dataAvailable = true;
-    Serial.println("Sending");
-    bot.sendPhotoByBinary(user, "image/jpeg", fb->len,
-                          isMoreDataAvailable, nullptr,
-                          getNextBuffer, getNextBufferLen);
-    String pesan = "Telah terjadi pelanggaran kecepatan\n";
-    bot.sendMessage(user, pesan, "Markdown");
-    Serial.println("done!");
-
-    esp_camera_fb_return(fb); */
+      startMillis=currentMillis;
+    }currentMillis = millis();
     }
 }
