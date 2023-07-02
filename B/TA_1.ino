@@ -62,7 +62,6 @@ void loop()
       time_1=millis();
       selisih= (time_1-time_2);
       sped=7200/selisih;
-      //Serial.println(selisint);
       Serial.println(selisih);
       Serial.print("Kecepatan adalah +");
       Serial.println(sped);
