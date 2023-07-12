@@ -1,13 +1,25 @@
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>
+#include <ArduinoJson.h>
 #include <HardwareSerial.h>
 #include <DistanceSensor_A02YYUW.h>
 unsigned char data1[4]={};
 unsigned char data2[4]={};
 float distance1,distance2;
 float time_1, time_2, sped,selisih;
+String speds;
 int selisint;
 HardwareSerial serial1(1);
 HardwareSerial serial2(2);
+String user = "1558390207";
 
+char ssid[] = "Itubenar";     // your network SSID (name)
+char password[] = "itubenarlo"; // your network 
+#define BOTtoken "6243097277:AAFG37wKeMM-D8Q5zycsmedGK_ABIjx4rMM"
+
+WiFiClientSecure client;
+UniversalTelegramBot bot(BOTtoken, client);
 
 void setup() 
 {
@@ -16,6 +28,24 @@ void setup()
   Serial.begin(9600);
   Serial1.begin(9600, SERIAL_8N1, 12, 13);
   Serial2.begin(9600, SERIAL_8N1, 16, 17);
+  // Attempt to connect to Wifi network:
+  Serial.print("Connecting Wifi: ");
+  Serial.println(ssid);
+
+  // Set WiFi to station mode and disconnect from an AP if it was Previously
+  // connected
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    Serial.print(".");
+    delay(500);
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 }
 
 void loop()
@@ -70,6 +100,12 @@ void loop()
         digitalWrite(19, HIGH);
         delay(3000);
         digitalWrite(19,LOW);
+        delay(5000);
+        speds = String(sped);
+        String pesan = "Telah terjadi pelanggaran \nKecepatan kendaraan ";
+        pesan += speds;
+        pesan += " km/jam";
+        bot.sendMessage(user, pesan, "Markdown");
       }
       else
       {
